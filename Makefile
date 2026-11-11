@@ -1,31 +1,44 @@
-#TOOLCHAIN=~/toolchain/gcc-arm-none-eabi-4_9-2014q4/bin
-#PREFIX=$(TOOLCHAIN)/arm-none-eabi-
-PREFIX=arm-none-eabi-
+CC      = arm-none-eabi-gcc
+OBJCOPY = arm-none-eabi-objcopy
 
-ARCHFLAGS=-mthumb -mcpu=cortex-m0plus
-COMMONFLAGS=-g3 -O0 -Wall -Werror $(ARCHFLAGS)
+CFLAGS  = -mcpu=cortex-m0plus -mthumb -O0 -g -Iincludes -Ihello_world -Iled_blinky
+LDFLAGS = -T link.ld -nostartfiles
 
-CFLAGS=-I./includes $(COMMONFLAGS)
-LDFLAGS=$(COMMONFLAGS) -T link.ld -Wl,--gc-sections,-Map,$(TARGET).map
-LDLIBS=-lgcc
+COMMON_SRCS = startup.c
 
-CC=$(PREFIX)gcc
-LD=$(PREFIX)gcc
-RM=rm -f
+LED_SRCS = led_blinky/led_blinky.c \
+           led_blinky/board.c \
+           led_blinky/clock_config.c \
+           led_blinky/pin_mux.c \
+           $(COMMON_SRCS)
 
-TARGET=main
+HELLO_SRCS = hello_world/hello_world.c \
+             hello_world/board.c \
+             hello_world/clock_config.c \
+             hello_world/pin_mux.c \
+             $(COMMON_SRCS)
 
-SRC=$(wildcard *.c)
-OBJ=$(patsubst %.c, %.o, $(SRC))
+.PHONY: all clean flash_led flash_hello
 
-all: elf
-elf: $(TARGET).elf
+all: led_blinky.bin hello_world.bin
+
+led_blinky.elf: $(LED_SRCS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+led_blinky.bin: led_blinky.elf
+	$(OBJCOPY) -O binary $< $@
+
+hello_world.elf: $(HELLO_SRCS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+hello_world.bin: hello_world.elf
+	$(OBJCOPY) -O binary $< $@
+
+flash_led: led_blinky.bin
+	openocd -f openocd.cfg -c "program led_blinky.elf verify reset exit"
+
+flash_hello: hello_world.bin
+	openocd -f openocd.cfg -c "program hello_world.elf verify reset exit"
 
 clean:
-	$(RM) $(TARGET).srec $(TARGET).elf $(TARGET).bin $(TARGET).map $(OBJ)
-
-$(TARGET).elf: $(OBJ)
-	$(LD) $(LDFLAGS) $(OBJ) $(LDLIBS) -o $@
-
-flash: all
-	openocd -f openocd.cfg -c "program $(TARGET).elf verify reset exit"
+	rm -f *.elf *.bin *.o
