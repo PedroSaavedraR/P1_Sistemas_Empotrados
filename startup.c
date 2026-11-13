@@ -13,7 +13,7 @@ void WEAK  UsageFaultIntHandler(void);
 void WEAK  SVCIntHandler(void);
 void WEAK  DebugMonIntHandler(void);
 void WEAK  PendSVIntHandler(void);
-void WEAK  SysTickIntHandler(void);
+void WEAK  SysTick_Handler(void);
 void WEAK  DMA0IntHandler(void);
 void WEAK  DMA1IntHandler(void);
 void WEAK  DMA2IntHandler(void);
@@ -92,7 +92,7 @@ void (* const g_pfnVectors[])(void) =
     SVCIntHandler,                          // SVCall handler
     0, 0,                                   // Reserved
     PendSVIntHandler,                       // The PendSV handler
-    SysTickIntHandler,                      // The SysTick handler
+    SysTick_Handler,                        // The SysTick handler
 
     DMA0IntHandler,                         // DMA channel 0 transfer complete
                                             // and error handler
@@ -178,7 +178,7 @@ void Default_ResetHandler(void)
 #pragma weak SVCIntHandler = DefaultIntHandler
 #pragma weak DebugMonIntHandler = DefaultIntHandler
 #pragma weak PendSVIntHandler = DefaultIntHandler
-#pragma weak SysTickIntHandler = DefaultIntHandler
+#pragma weak SysTick_Handler = DefaultIntHandler
 #pragma weak DMA0IntHandler = Default_ResetHandler
 #pragma weak DMA1IntHandler = Default_ResetHandler
 #pragma weak DMA2IntHandler = Default_ResetHandler

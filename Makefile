@@ -1,10 +1,33 @@
 CC      = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
 
-CFLAGS  = -mcpu=cortex-m0plus -mthumb -O0 -g -Iincludes -Ihello_world -Iled_blinky
-LDFLAGS = -T link.ld -nostartfiles
+SDK_DIR ?= $(HOME)/frdm-kl46z-sdk
 
-COMMON_SRCS = startup.c
+CFLAGS  = -mcpu=cortex-m0plus -mthumb -O0 -g -DCPU_MKL46Z256VLL4 \
+          -Iincludes -Ihello_world -Iled_blinky \
+          -I$(SDK_DIR)/devices/MKL46Z4 \
+          -I$(SDK_DIR)/devices/MKL46Z4/drivers \
+          -I$(SDK_DIR)/devices/MKL46Z4/utilities \
+          -I$(SDK_DIR)/devices/MKL46Z4/utilities/io \
+          -I$(SDK_DIR)/devices/MKL46Z4/utilities/log \
+          -I$(SDK_DIR)/devices/MKL46Z4/utilities/str \
+          -I$(SDK_DIR)/boards/frdmkl46z
+LDFLAGS = -T link.ld -nostartfiles -specs=nosys.specs
+
+SDK_SRCS = $(SDK_DIR)/devices/MKL46Z4/system_MKL46Z4.c \
+           $(SDK_DIR)/devices/MKL46Z4/drivers/fsl_common.c \
+           $(SDK_DIR)/devices/MKL46Z4/drivers/fsl_clock.c \
+           $(SDK_DIR)/devices/MKL46Z4/drivers/fsl_gpio.c \
+           $(SDK_DIR)/devices/MKL46Z4/drivers/fsl_lpsci.c \
+           $(SDK_DIR)/devices/MKL46Z4/drivers/fsl_smc.c \
+           $(SDK_DIR)/devices/MKL46Z4/drivers/fsl_uart.c \
+           $(SDK_DIR)/devices/MKL46Z4/drivers/fsl_ftfx_cache.c \
+           $(SDK_DIR)/devices/MKL46Z4/utilities/fsl_debug_console.c \
+           $(SDK_DIR)/devices/MKL46Z4/utilities/io/fsl_io.c \
+           $(SDK_DIR)/devices/MKL46Z4/utilities/log/fsl_log.c \
+           $(SDK_DIR)/devices/MKL46Z4/utilities/str/fsl_str.c
+
+COMMON_SRCS = startup.c $(SDK_SRCS)
 
 LED_SRCS = led_blinky/led_blinky.c \
            led_blinky/board.c \
